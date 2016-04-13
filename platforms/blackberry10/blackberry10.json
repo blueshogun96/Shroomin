@@ -1,0 +1,32 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-plugin-game-center": {
+            "PACKAGE_NAME": "net.shogun3d.shroomin"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "net.shogun3d.shroomin"
+        }
+    },
+    "dependent_plugins": {},
+    "modules": [
+        {
+            "file": "plugins/cordova-plugin-game-center/www/gamecenter.js",
+            "id": "cordova-plugin-game-center.GameCenter",
+            "pluginId": "cordova-plugin-game-center",
+            "clobbers": [
+                "gamecenter"
+            ]
+        }
+    ],
+    "plugin_metadata": {
+        "cordova-plugin-game-center": "0.4.2",
+        "cordova-plugin-whitelist": "1.2.1"
+    }
+}

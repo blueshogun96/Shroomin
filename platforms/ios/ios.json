@@ -1,0 +1,43 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {
+            "config.xml": {
+                "parents": {
+                    "/*": [
+                        {
+                            "xml": "<feature name=\"GameCenter\"><param name=\"ios-package\" value=\"GameCenter\" /></feature>",
+                            "count": 1
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "installed_plugins": {
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "net.shogun3d.shroomin"
+        },
+        "cordova-plugin-game-center": {
+            "PACKAGE_NAME": "net.shogun3d.shroomin"
+        }
+    },
+    "dependent_plugins": {},
+    "modules": [
+        {
+            "file": "plugins/cordova-plugin-game-center/www/gamecenter.js",
+            "id": "cordova-plugin-game-center.GameCenter",
+            "pluginId": "cordova-plugin-game-center",
+            "clobbers": [
+                "gamecenter"
+            ]
+        }
+    ],
+    "plugin_metadata": {
+        "cordova-plugin-whitelist": "1.2.1",
+        "cordova-plugin-game-center": "0.4.2"
+    }
+}
