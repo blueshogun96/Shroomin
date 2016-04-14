@@ -65,6 +65,7 @@ mushroom = new mushroom_t( area_width / 2, area_height / 2, 0 );
 /* Sprite images */
 var mushrooms = []; //{ new Image(), new Image(), new Image() };
 var smiley = new Image();
+var grass = new Image();
 
 mushrooms[0] = new Image();
 mushrooms[1] = new Image();
@@ -73,6 +74,13 @@ mushrooms[0].src = "img/mushroom1.png";
 mushrooms[1].src = "img/mushroom2.png";
 mushrooms[2].src = "img/mushroom3.png";
 smiley.src = "img/smiley.png";
+grass.src = "img/tile_grass.png";
+
+/*grass.onload = function()
+{
+    context.fillStyle = context.createPattern( img, 'repeat' );
+    context.fillRect( 0, 0, game_canvas.width, game_canvas.height );
+}*/
 
 
 /* Sound effects */
@@ -80,6 +88,11 @@ var sndfx = [];
 
 function init_soundfx()
 {
+    sndfx[0] = new buzz.sound( "snd/birds2", { formats: [ "wav" ] } );
+    sndfx[1] = new buzz.sound( "snd/birds9", { formats: [ "wav" ] } );
+    sndfx[2] = new buzz.sound( "snd/Emberiza.pusilla", { formats: [ "wav" ] } );
+    sndfx[3] = new buzz.sound( "snd/pop", { formats: [ "wav" ] } );
+    
     /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
     sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
     sndfx[2] = new buzz.sound( "snd/snd3", { formats: [ "mp3", "wav" ] } );
@@ -211,11 +224,23 @@ function update_mouse_position()
 	user.y = mouse_y;
 }
 
-/*function snd_play( id )
+function snd_play( id )
 {
 	sndfx[id].currentTime = 0;
 	sndfx[id].play();
-}*/
+}
+
+function snd_loop( id )
+{
+    sndfx[id].currentTime = 0;
+    sndfx[id].play();
+    sndfx[id].loop();
+}
+
+function snd_stop( id )
+{
+    sndfx[id].stop();
+}
 
 
 /*
@@ -352,6 +377,7 @@ function handle_mushroom()
         if( mushroom.y < 50 )
             mushroom.y = 50;
         
+        snd_play(3);
         add_sphere();
     }
 }
@@ -618,6 +644,12 @@ var is_mobile =
     }
 };
 
+function draw_grass_tile()
+{
+    context.fillStyle = context.createPattern( grass, 'repeat' );
+    context.fillRect( 0, 0, game_canvas.width, game_canvas.height );
+}
+
 /* The main loop function */
 function main_loop()
 {
@@ -627,8 +659,8 @@ function main_loop()
     /* Clear the screen */
     clear_canvas();
     
-    if( !mobile_version )
-        draw_border();
+    draw_grass_tile();
+    draw_border();
     
     movement_gamepad();
     
@@ -815,6 +847,9 @@ context = game_canvas.getContext("2d");
     area_width = dimension[0];
     area_height = dimension[1];
     
+    mouse_x = area_width / 2;
+    mouse_y = area_height / 2;;
+    
     mushroom.x = Math.floor(Math.random()*area_width);
     mushroom.y = Math.floor(Math.random()*area_height);
     mushroom.type = Math.floor(Math.random()*3);
@@ -831,6 +866,10 @@ context = game_canvas.getContext("2d");
     /* Initialize sound effects */
     init_soundfx();
     
+    snd_loop(0);
+    snd_loop(1);
+    snd_loop(2);
+    
 /* Animate main loop */
 var main = function()
 {
@@ -841,8 +880,8 @@ var main = function()
 /* Verify support for buzz sound library */
 if( !buzz.isSupported() )
 	alert( "HTML5 audio does not appear to be supported on your browser!" );
-/*if( !buzz.isWAVSupported() )
-	alert( "This browser doesn't appear to support .wav format!" );*/
+if( !buzz.isWAVSupported() )
+	alert( "This browser doesn't appear to support .wav format!" );
 	
 //go_fullscreen();
 //block_until_document_loaded();

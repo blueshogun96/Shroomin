@@ -88,6 +88,11 @@ var sndfx = [];
 
 function init_soundfx()
 {
+    sndfx[0] = new buzz.sound( "snd/birds2", { formats: [ "wav" ] } );
+    sndfx[1] = new buzz.sound( "snd/birds9", { formats: [ "wav" ] } );
+    sndfx[2] = new buzz.sound( "snd/Emberiza.pusilla", { formats: [ "wav" ] } );
+    sndfx[3] = new buzz.sound( "snd/pop", { formats: [ "wav" ] } );
+    
     /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
      sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
      sndfx[2] = new buzz.sound( "snd/snd3", { formats: [ "mp3", "wav" ] } );
@@ -219,11 +224,23 @@ function update_mouse_position()
     user.y = mouse_y;
 }
 
-/*function snd_play( id )
- {
-	sndfx[id].currentTime = 0;
-	sndfx[id].play();
- }*/
+function snd_play( id )
+{
+    sndfx[id].currentTime = 0;
+    sndfx[id].play();
+}
+
+function snd_loop( id )
+{
+    sndfx[id].currentTime = 0;
+    sndfx[id].play();
+    sndfx[id].loop();
+}
+
+function snd_stop( id )
+{
+    sndfx[id].stop();
+}
 
 
 /*
@@ -360,6 +377,7 @@ function handle_mushroom()
         if( mushroom.y < 50 )
             mushroom.y = 50;
         
+        snd_play(3);
         add_sphere();
     }
 }
@@ -829,6 +847,9 @@ function on_load()
     area_width = dimension[0];
     area_height = dimension[1];
     
+    mouse_x = area_width / 2;
+    mouse_y = area_height / 2;;
+    
     mushroom.x = Math.floor(Math.random()*area_width);
     mushroom.y = Math.floor(Math.random()*area_height);
     mushroom.type = Math.floor(Math.random()*3);
@@ -845,6 +866,10 @@ function on_load()
     /* Initialize sound effects */
     init_soundfx();
     
+    snd_loop(0);
+    snd_loop(1);
+    snd_loop(2);
+    
     /* Animate main loop */
     var main = function()
     {
@@ -855,8 +880,8 @@ function on_load()
     /* Verify support for buzz sound library */
     if( !buzz.isSupported() )
         alert( "HTML5 audio does not appear to be supported on your browser!" );
-    /*if( !buzz.isWAVSupported() )
-     alert( "This browser doesn't appear to support .wav format!" );*/
+    if( !buzz.isWAVSupported() )
+        alert( "This browser doesn't appear to support .wav format!" );
     
     //go_fullscreen();
     //block_until_document_loaded();

@@ -1,0 +1,18 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-plugin-game-center": {
+            "PACKAGE_NAME": "{1a933a50-027e-11e6-900a-9d963dd5b1b4}"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "{1a933a50-027e-11e6-900a-9d963dd5b1b4}"
+        }
+    },
+    "dependent_plugins": {}
+}
