@@ -88,10 +88,10 @@ var sndfx = [];
 
 function init_soundfx()
 {
-    sndfx[0] = new buzz.sound( "snd/birds2", { formats: [ "wav" ] } );
-    sndfx[1] = new buzz.sound( "snd/birds9", { formats: [ "wav" ] } );
-    sndfx[2] = new buzz.sound( "snd/Emberiza.pusilla", { formats: [ "wav" ] } );
-    sndfx[3] = new buzz.sound( "snd/pop", { formats: [ "wav" ] } );
+    sndfx[0] = new buzz.sound( "snd/birds2", { formats: [ "mp3", "wav" ] } );
+    sndfx[1] = new buzz.sound( "snd/birds9", { formats: [ "mp3", "wav" ] } );
+    sndfx[2] = new buzz.sound( "snd/Emberiza.pusilla", { formats: [ "mp3", "wav" ] } );
+    sndfx[3] = new buzz.sound( "snd/pop", { formats: [ "mp3", "wav" ] } );
     
     /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
     sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
@@ -116,6 +116,17 @@ function init_soundfx()
 /*
  * Utility functions
  */
+
+function alertEx( str )
+{
+    if (is_mobile.windows() || navigator.platform == "Win64" ) {
+        var msg = new Windows.UI.Popups.MessageDialog(str);
+        msg.showAsync();
+        return;
+    }
+
+    alert(str);
+}
 
 function on_document_loaded()
 {
@@ -480,7 +491,7 @@ function update_spheres()
             if( d < 12 )
             {
                 game_over = true;
-                alert( "Oh no, you died!" );
+                alertEx( "Oh no, you died!" );
             }
         }
 			
@@ -879,9 +890,9 @@ var main = function()
     
 /* Verify support for buzz sound library */
 if( !buzz.isSupported() )
-	alert( "HTML5 audio does not appear to be supported on your browser!" );
+	alertEx( "HTML5 audio does not appear to be supported on your browser!" );
 if( !buzz.isWAVSupported() )
-	alert( "This browser doesn't appear to support .wav format!" );
+	alertEx( "This browser doesn't appear to support .wav format!" );
 	
 //go_fullscreen();
 //block_until_document_loaded();
