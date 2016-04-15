@@ -673,7 +673,7 @@ function setup_event_handlers() {
     }
 
     /* Key events for Amazon Fire TV */
-    canvas.addEventListener('keypress', function (e) {
+   /* canvas.addEventListener('keypress', function (e) {
         alert("You pressed: " + e.keyCode);
 
         if (e.keyCode === 38) user.y -= 7;
@@ -681,7 +681,7 @@ function setup_event_handlers() {
         if (e.keyCode === 37) user.x -= 7;
         if (e.keyCode === 39) user.x += 7;
         e.preventDefault();
-    }, false);
+    }, false);*/
 
     /* Gamepads */
     //setInterval( scangamepads, 500 );

@@ -653,6 +653,10 @@ function setup_event_handlers() {
             canvas.addEventListener('pointerdown', on_mouse_move);
             canvas.addEventListener('pointermove', on_mouse_move);
             canvas.addEventListener('pointerup', on_mouse_move);
+
+            canvas.addEventListener('MSPointerDown', on_mouse_move);
+            canvas.addEventListener('MSPointerMove', on_mouse_move);
+            canvas.addEventListener('MSPointerUp', on_mouse_move);
         }
 
         canvas.addEventListener('touchstart', function (e) {
