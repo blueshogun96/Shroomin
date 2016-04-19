@@ -16,6 +16,7 @@ var mouse_click = false;
 var mouse_up = false;
 var mouse_in_canvas = true;
 var mouse_x = 0, mouse_y = 0;
+var finger_x = 0, finger_y = 0;
 var score = 0;
 var stage = 1;
 var stage_timer_id;
@@ -138,6 +139,8 @@ function dialog_box_on_click( x, y )
 {
     if( !dialog_box.active )
         return;
+    
+    //console.log( 'X: ' + x + ' Y: ' + y );
     
     /* If a button is clicked, respond */
     var x1, x2, y1, y2;
@@ -755,7 +758,10 @@ function main_loop() {
     }
     
     draw_dialog_box();
-    dialog_box_on_click( mouse_x, mouse_y );
+    if( !is_mobile.any() )
+        dialog_box_on_click( mouse_x, mouse_y );
+    else
+        dialog_box_on_click( finger_x, finger_y );
     
     if( dialog_box.active )
     {
@@ -812,8 +818,8 @@ function setup_event_handlers() {
         }
         
         canvas.addEventListener('touchstart', function (e) {
-                                mouse_x = e.changedTouches[0].pageX;
-                                mouse_y = e.changedTouches[0].pageY;
+                                finger_x = mouse_x = e.changedTouches[0].pageX;
+                                finger_y = mouse_y = e.changedTouches[0].pageY;
                                 offset_x = mouse_x - user.x;
                                 offset_y = mouse_y - user.y;
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
@@ -824,11 +830,15 @@ function setup_event_handlers() {
         canvas.addEventListener('touchmove', function (e) {
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
                                 mouse_y = e.changedTouches[0].pageY - offset_y;
+                                finger_x = e.changedTouches[0].pageX;
+                                finger_y = e.changedTouches[0].pageY;
                                 e.preventDefault();
                                 }, false);
         canvas.addEventListener('touchend', function (e) {
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
                                 mouse_y = e.changedTouches[0].pageY - offset_y;
+                                finger_x = e.changedTouches[0].pageX;
+                                finger_y = e.changedTouches[0].pageY;
                                 //dialog_box_on_click( e.changedTouches[0].pageX, e.changedTouches[0].pageY );
                                 mouse_up = true;
                                 e.preventDefault();
