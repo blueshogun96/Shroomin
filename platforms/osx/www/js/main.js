@@ -13,6 +13,7 @@ var area_height = 576;
 var game_over = false;
 var game_mode = 0;  /* 0=menu, 1=tutorial, 2=ingame */
 var mouse_click = false;
+var mouse_up = false;
 var mouse_in_canvas = true;
 var mouse_x = 0, mouse_y = 0;
 var score = 0;
@@ -61,8 +62,11 @@ mushroom = new mushroom_t(area_width / 2, area_height / 2, 0);
 
 /* Sprite images */
 var mushrooms = []; //{ new Image(), new Image(), new Image() };
+var mushrooms2 = new Image();
 var smiley = new Image();
 var grass = new Image();
+var dialog = new Image();
+var cursor_image = new Image();
 
 mushrooms[0] = new Image();
 mushrooms[1] = new Image();
@@ -72,6 +76,9 @@ mushrooms[1].src = "img/mushroom2.png";
 mushrooms[2].src = "img/mushroom3.png";
 smiley.src = "img/smiley.png";
 grass.src = "img/tile_grass.png";
+dialog.src = "img/UI.png";
+cursor_image.src = "img/cursor.png";
+mushrooms2.src = "img/mushrooms.png";
 
 /*grass.onload = function()
  {
@@ -79,6 +86,101 @@ grass.src = "img/tile_grass.png";
  context.fillRect( 0, 0, game_canvas.width, game_canvas.height );
  }*/
 
+
+/* Dialog UI */
+function dialog_box_t()
+{
+    this.type = 0;
+    this.active = false;
+    this.x = 0;
+    this.y = 0;
+    this.centered = true;
+    this.text = "nil";
+    this.result = -1;
+}
+dialog_box = new dialog_box_t();
+
+function draw_dialog_box()
+{
+    /* If the dialog box is active, draw it */
+    if( dialog_box.active )
+    {
+        /* Calculate the dimensions of this dialog box */
+        var width = 512, height = 256;
+        var dx = dialog_box.centered ? (area_width/2) - (width/2) : dialog_box.x;
+        var dy = dialog_box.centered ? (area_height/2) - (height/2) : dialog_box.y;
+        var sx = 0;
+        var sy = dialog_box.type == 0 ? 0 : height;
+        
+        context.drawImage( dialog, sx, sy, width, height, dx, dy, width, height );
+        
+        /* TODO: Multiple lines */
+        var tx = dx + (width/2);
+        var ty = dy + (height/2);
+        
+        draw_outlined_font( dialog_box.text, tx, ty, '24pt Helvetica', 'black', 'white', 6, 'center' );
+        //('Score: ' + score, 30, 30, '14pt Helvetica', 'black', 'white', 6, 'left' );//
+    }
+}
+
+function invoke_dialog_box( text, x, y, centered, type )
+{
+    /* Activate the dialog box */
+    dialog_box.active = true;
+    dialog_box.type = type;
+    dialog_box.x = x;
+    dialog_box.y = y;
+    dialog_box.centered = centered;
+    dialog_box.text = text;
+}
+
+function dialog_box_on_click( x, y )
+{
+    if( !dialog_box.active )
+        return;
+    
+    /* If a button is clicked, respond */
+    var x1, x2, y1, y2;
+    var width = 512, height = 256;
+    var dx = ((area_width/2)-(width/2));
+    var dy = ((area_height/2)-(height/2));
+    
+    /* X button */
+    x1 = dx+(512-5-60), y1 = dy+5, x2 = dx+512-5, y2 = dy+60+5;
+    context.beginPath();
+    context.lineWidth = '2';
+    context.strokeStyle = 'red';
+    context.rect( x1, y1, 60, 60 );
+    context.stroke();
+    if( x > x1 && x < x2 && y > y1 && y < y2 && mouse_up )
+    {
+        dialog_box.active = false;
+        dialog_box.result = 0;
+        //alertEx( "You clicked X" );
+    }
+    
+    /* Yes and No buttons, respectively */
+    if( dialog_box.type === 0 )
+    {
+        
+    }
+    /* OK button */
+    if( dialog_box.type === 1 )
+    {
+        x1 = dx+((width/2)-40), y1 = dy+height-60-10, x2 = dx+((width/2)+40), y2 = dy+height+60-10;
+        context.beginPath()
+        context.lineWidth = '2';
+        context.strokeStyle = 'red';
+        context.rect( x1, y1, 80, 60 );
+        context.stroke();
+        if( x > x1 && x < x2 && y > y1 && y < y2 && mouse_up )
+        {
+            dialog_box.active = false;
+            dialog_box.result = 1;
+            //alertEx( "You clicked OK" );
+        }
+    }
+}
 
 /* Sound effects */
 var sndfx = [];
@@ -88,6 +190,7 @@ function init_soundfx() {
     sndfx[1] = new buzz.sound("snd/birds9", { formats: ["mp3", "wav"] });
     sndfx[2] = new buzz.sound("snd/Emberiza.pusilla", { formats: ["mp3", "wav"] });
     sndfx[3] = new buzz.sound("snd/pop", { formats: ["mp3", "wav"] });
+    sndfx[4] = new buzz.sound("snd/coupoing", { formats: ["mp3", "wav"] });
     
     /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
      sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
@@ -146,11 +249,31 @@ function remove(arr, item) {
         arr.splice(i, 1);
 }
 
-function draw_font(string, x, y, font, colour) {
+function draw_font(string, x, y, font, colour, alignment ) {
     /* Draw the text */
     context.font = font;
     context.fillStyle = colour;
+    context.textAlign = alignment;
     context.fillText(string, Math.floor(x), Math.floor(y));
+}
+
+function draw_outlined_font( string, x, y, font, stroke_colour, fill_colour, outline_width, alignment )
+{
+    /* Font type and alignment */
+    context.font = font;
+    context.textAlign = alignment;
+    
+    /* TODO: Experiment with this */
+    context.miterLimit = 2;
+    context.lineJoin = 'round'; //'circle';
+    
+    /* Draw font outlined, then filled */
+    context.lineWidth = outline_width;
+    context.strokeStyle = stroke_colour;
+    context.strokeText( string, x, y );
+    context.lineWidth = 1;
+    context.fillStyle = fill_colour;
+    context.fillText( string, x, y );
 }
 
 function check_for_intersection(p1, p2, p3, p4) {
@@ -211,7 +334,7 @@ function calculate_fps() {
     frame_time += (this_frame_time - frame_time) / filter_strength;
     last_loop = this_loop;
     
-    draw_font('Frames Per Second: ' + (1000 / frame_time).toFixed(0), area_width - 200,area_height - 30, '10pt Helvetica', 'black');
+    draw_font('Frames Per Second: ' + (1000 / frame_time).toFixed(0), area_width - 200,area_height - 30, '10pt Helvetica', 'black', 'left');
 }
 
 function update_mouse_position() {
@@ -282,7 +405,11 @@ function on_mouse_over() {
 
 function on_mouse_click() {
     /* Save mouse click */
-    mouse_click = true;
+    //mouse_click = true;
+}
+
+function on_mouse_up() {
+    mouse_up = true;
 }
 
 function draw_cursor() {
@@ -442,7 +569,9 @@ function update_spheres() {
             var d = distance(spheres[i].x, spheres[i].y, user.x, user.y);
             if (d < 12) {
                 game_over = true;
-                alertEx("Oh no, you died!");
+                //alertEx("Oh no, you died!");
+                snd_play(4);
+                //invoke_dialog_box( "Your Score: " + score + "\nTry Again?", 0, 0, true, 1 );
             }
         }
         
@@ -488,8 +617,7 @@ function identical_points(t1, t2) {
 
 
 function draw_hud() {
-    //draw_font( 'Stage: ' + stage, area_width-100, 30, '14pt Helvetica', 'black' );
-    draw_font('Score: ' + score, 30, 30, '14pt Helvetica', 'black');
+    draw_outlined_font('Score: ' + score, 30, 30, '14pt Helvetica', 'black', 'white', 6, 'left' );
 }
 
 function clear_canvas() {
@@ -593,6 +721,18 @@ function draw_grass_tile() {
     context.fillRect(0, 0, game_canvas.width, game_canvas.height);
 }
 
+function delay(ms) {
+    var cur_d = new Date();
+    var cur_ticks = cur_d.getTime();
+    var ms_passed = 0;
+    while(ms_passed < ms) {
+        var d = new Date();  // Possible memory leak?
+        var ticks = d.getTime();
+        ms_passed = ticks - cur_ticks;
+        // d = null;  // Prevent memory leak?
+    }
+}
+
 /* The main loop function */
 function main_loop() {
     /* Update mouse position */
@@ -604,21 +744,39 @@ function main_loop() {
     draw_grass_tile();
     draw_border();
     
-    movement_gamepad();
+    if( !dialog_box.active )
+    {
+        movement_gamepad();
+        
+        handle_mushroom();
+        draw_spheres();
+        update_spheres();
+        draw_user();
+    }
     
-    handle_mushroom();
-    draw_spheres();
-    update_spheres();
-    draw_user();
+    draw_dialog_box();
+    dialog_box_on_click( mouse_x, mouse_y );
+    
+    if( dialog_box.active )
+    {
+        /* Draw the cursor while the dialog box is active, only for non-mobile/embedded */
+        if( !is_mobile.any() )
+            draw_cursor();
+    }
     
     draw_hud();
     calculate_fps();
     
     if (game_over)
+    {
+        delay(500);
+        invoke_dialog_box( "Your Score: " + score + "\nTry Again?", 0, 0, true, 1 );
         reset_game();
+    }
     
     /* Reset mouse click flag */
     mouse_click = false;
+    mouse_up = false;
 }
 
 function go_fullscreen() {
@@ -641,12 +799,16 @@ function setup_event_handlers() {
         canvas.addEventListener("mousemove", on_mouse_move);
         canvas.addEventListener("mouseout", on_mouse_out);
         canvas.addEventListener("mouseover", on_mouse_over);
+        canvas.addEventListener("mouseup", function(e) {
+                                //dialog_box_on_click( e.x, e.y );
+                                mouse_up = true;
+                                });
     }
     else {
         if (is_mobile.windows()) {
             canvas.addEventListener('pointerdown', on_mouse_move);
             canvas.addEventListener('pointermove', on_mouse_move);
-            canvas.addEventListener('pointerup', on_mouse_move);
+            canvas.addEventListener('pointerup', on_mouse_move); // TODO: dialog_box
         }
         
         canvas.addEventListener('touchstart', function (e) {
@@ -667,6 +829,8 @@ function setup_event_handlers() {
         canvas.addEventListener('touchend', function (e) {
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
                                 mouse_y = e.changedTouches[0].pageY - offset_y;
+                                //dialog_box_on_click( e.changedTouches[0].pageX, e.changedTouches[0].pageY );
+                                mouse_up = true;
                                 e.preventDefault();
                                 }, false);
         
@@ -697,8 +861,6 @@ function scangamepads() {
             return;
         }
     }
-    
-    //alert( "Shiite" );
 }
 
 function movement_gamepad() {
@@ -756,7 +918,6 @@ function on_load() {
     /* The mobile webpage should have the appropriate icon stating that this
      game will be available on the app store for their device. */
     if (is_mobile.any() && mobile_version == false) {
-        //window.location.replace("http://m.looptil.shogun3d.net");
         //return;
     }
     
@@ -826,4 +987,3 @@ function on_load() {
     }
     
 }
-/* TODO: http://h3manth.com/content/html5-canvas-full-screen-and-full-page */
