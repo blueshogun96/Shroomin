@@ -16,6 +16,7 @@ var mouse_click = false;
 var mouse_up = false;
 var mouse_in_canvas = true;
 var mouse_x = 0, mouse_y = 0;
+var finger_x = 0, finger_y = 0;
 var score = 0;
 var stage = 1;
 var stage_timer_id;
@@ -62,9 +63,11 @@ mushroom = new mushroom_t(area_width / 2, area_height / 2, 0);
 
 /* Sprite images */
 var mushrooms = []; //{ new Image(), new Image(), new Image() };
+var mushrooms2 = new Image();
 var smiley = new Image();
 var grass = new Image();
 var dialog = new Image();
+var cursor_image = new Image();
 
 mushrooms[0] = new Image();
 mushrooms[1] = new Image();
@@ -75,6 +78,8 @@ mushrooms[2].src = "img/mushroom3.png";
 smiley.src = "img/smiley.png";
 grass.src = "img/tile_grass.png";
 dialog.src = "img/UI.png";
+cursor_image.src = "img/cursor.png";
+mushrooms2.src = "img/mushrooms.png";
 
 /*grass.onload = function()
  {
@@ -135,6 +140,8 @@ function dialog_box_on_click( x, y )
     if( !dialog_box.active )
         return;
     
+    console.log( 'X: ' + x + ' Y: ' + y );
+    
     /* If a button is clicked, respond */
     var x1, x2, y1, y2;
     var width = 512, height = 256;
@@ -186,6 +193,7 @@ function init_soundfx() {
     sndfx[1] = new buzz.sound("snd/birds9", { formats: ["mp3", "wav"] });
     sndfx[2] = new buzz.sound("snd/Emberiza.pusilla", { formats: ["mp3", "wav"] });
     sndfx[3] = new buzz.sound("snd/pop", { formats: ["mp3", "wav"] });
+    sndfx[4] = new buzz.sound("snd/coupoing", { formats: ["mp3", "wav"] });
     
     /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
      sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
@@ -564,8 +572,9 @@ function update_spheres() {
             var d = distance(spheres[i].x, spheres[i].y, user.x, user.y);
             if (d < 12) {
                 game_over = true;
-                alertEx("Oh no, you died!");
-                invoke_dialog_box( "Your Score: " + score, 0, 0, true, 1 );
+                //alertEx("Oh no, you died!");
+                snd_play(4);
+                //invoke_dialog_box( "Your Score: " + score + "\nTry Again?", 0, 0, true, 1 );
             }
         }
         
@@ -715,6 +724,18 @@ function draw_grass_tile() {
     context.fillRect(0, 0, game_canvas.width, game_canvas.height);
 }
 
+function delay(ms) {
+    var cur_d = new Date();
+    var cur_ticks = cur_d.getTime();
+    var ms_passed = 0;
+    while(ms_passed < ms) {
+        var d = new Date();  // Possible memory leak?
+        var ticks = d.getTime();
+        ms_passed = ticks - cur_ticks;
+        // d = null;  // Prevent memory leak?
+    }
+}
+
 /* The main loop function */
 function main_loop() {
     /* Update mouse position */
@@ -737,13 +758,27 @@ function main_loop() {
     }
     
     draw_dialog_box();
-    dialog_box_on_click( mouse_x, mouse_y );
+    if( !is_mobile.any() )
+        dialog_box_on_click( mouse_x, mouse_y );
+    else
+        dialog_box_on_click( finger_x, finger_y );
+    
+    if( dialog_box.active )
+    {
+        /* Draw the cursor while the dialog box is active, only for non-mobile/embedded */
+        if( !is_mobile.any() )
+            draw_cursor();
+    }
     
     draw_hud();
     calculate_fps();
     
     if (game_over)
+    {
+        delay(500);
+        invoke_dialog_box( "Your Score: " + score + "\nTry Again?", 0, 0, true, 1 );
         reset_game();
+    }
     
     /* Reset mouse click flag */
     mouse_click = false;
@@ -783,8 +818,8 @@ function setup_event_handlers() {
         }
         
         canvas.addEventListener('touchstart', function (e) {
-                                mouse_x = e.changedTouches[0].pageX;
-                                mouse_y = e.changedTouches[0].pageY;
+                                finger_x = mouse_x = e.changedTouches[0].pageX;
+                                finger_y = mouse_y = e.changedTouches[0].pageY;
                                 offset_x = mouse_x - user.x;
                                 offset_y = mouse_y - user.y;
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
@@ -795,11 +830,15 @@ function setup_event_handlers() {
         canvas.addEventListener('touchmove', function (e) {
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
                                 mouse_y = e.changedTouches[0].pageY - offset_y;
+                                finger_x = e.changedTouches[0].pageX;
+                                finger_y = e.changedTouches[0].pageY;
                                 e.preventDefault();
                                 }, false);
         canvas.addEventListener('touchend', function (e) {
                                 mouse_x = e.changedTouches[0].pageX - offset_x;
                                 mouse_y = e.changedTouches[0].pageY - offset_y;
+                                finger_x = e.changedTouches[0].pageX;
+                                finger_y = e.changedTouches[0].pageY;
                                 //dialog_box_on_click( e.changedTouches[0].pageX, e.changedTouches[0].pageY );
                                 mouse_up = true;
                                 e.preventDefault();
