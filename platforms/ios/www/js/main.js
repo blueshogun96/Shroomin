@@ -58,7 +58,7 @@ function mushroom_t(x, y, type) {
     this.y = y;
     this.type = type;
 }
-mushroom = new mushroom_t(area_width / 2, area_height / 2, 0);
+mushroom = []; //new mushroom_t(area_width / 2, area_height / 2, 0);
 
 
 /* Sprite images */
@@ -67,6 +67,8 @@ var mushrooms2 = new Image();
 var smiley = new Image();
 var grass = new Image();
 var dialog = new Image();
+var dialog2 = new Image();
+var dialog3 = new Image();
 var cursor_image = new Image();
 
 mushrooms[0] = new Image();
@@ -78,6 +80,8 @@ mushrooms[2].src = "img/mushroom3.png";
 smiley.src = "img/smiley.png";
 grass.src = "img/tile_grass.png";
 dialog.src = "img/UI.png";
+dialog2.src = "img/UI2.png";
+dialog3.src = "img/UI3.png";
 cursor_image.src = "img/cursor.png";
 mushrooms2.src = "img/mushrooms.png";
 
@@ -107,19 +111,24 @@ function draw_dialog_box()
     if( dialog_box.active )
     {
         /* Calculate the dimensions of this dialog box */
-        var width = 512, height = 256;
+        var width = 512, height = dialog_box.type == 2 ? 330 : 256;
         var dx = dialog_box.centered ? (area_width/2) - (width/2) : dialog_box.x;
         var dy = dialog_box.centered ? (area_height/2) - (height/2) : dialog_box.y;
         var sx = 0;
         var sy = dialog_box.type == 0 ? 0 : height;
         
-        context.drawImage( dialog, sx, sy, width, height, dx, dy, width, height );
+        if( dialog_box.type != 2 )
+            context.drawImage( dialog, sx, sy, width, height, dx, dy, width, height );
+        else
+            context.drawImage( dialog3, dx, dy );
         
         /* TODO: Multiple lines */
         var tx = dx + (width/2);
         var ty = dy + (height/2);
         
-        draw_outlined_font( dialog_box.text, tx, ty, '24pt Helvetica', 'black', 'white', 6, 'center' );
+        if( dialog_box.type != 2 )
+            draw_outlined_font( dialog_box.text, tx, ty, '24pt Helvetica', 'black', 'white', 6, 'center' );
+        
         //('Score: ' + score, 30, 30, '14pt Helvetica', 'black', 'white', 6, 'left' );//
     }
 }
@@ -140,7 +149,7 @@ function dialog_box_on_click( x, y )
     if( !dialog_box.active )
         return;
     
-    console.log( 'X: ' + x + ' Y: ' + y );
+    //console.log( 'X: ' + x + ' Y: ' + y );
     
     /* If a button is clicked, respond */
     var x1, x2, y1, y2;
@@ -165,7 +174,31 @@ function dialog_box_on_click( x, y )
     /* Yes and No buttons, respectively */
     if( dialog_box.type === 0 )
     {
+        x1 = dx+((width/2)-80), y1 = dy+height-60-10, x2 = dx+((width/2)), y2 = dy+height+60-10;
+        context.beginPath()
+        context.lineWidth = '2';
+        context.strokeStyle = 'red';
+        context.rect( x1, y1, 80, 60 );
+        context.stroke();
+        if( x > x1 && x < x2 && y > y1 && y < y2 && mouse_up )
+        {
+            dialog_box.active = false;
+            dialog_box.result = 2;
+            //alertEx( "You clicked OK" );
+        }
         
+        x1 = dx+((width/2)), y1 = dy+height-60-10, x2 = dx+((width/2)+80), y2 = dy+height+60-10;
+        context.beginPath()
+        context.lineWidth = '2';
+        context.strokeStyle = 'red';
+        context.rect( x1, y1, 80, 60 );
+        context.stroke();
+        if( x > x1 && x < x2 && y > y1 && y < y2 && mouse_up )
+        {
+            dialog_box.active = false;
+            dialog_box.result = 3;
+            //alertEx( "You clicked OK" );
+        }
     }
     /* OK button */
     if( dialog_box.type === 1 )
@@ -183,6 +216,11 @@ function dialog_box_on_click( x, y )
             //alertEx( "You clicked OK" );
         }
     }
+    /* Main menu */
+    if( dialog_box.type === 2 )
+    {
+        
+    }
 }
 
 /* Sound effects */
@@ -194,25 +232,9 @@ function init_soundfx() {
     sndfx[2] = new buzz.sound("snd/Emberiza.pusilla", { formats: ["mp3", "wav"] });
     sndfx[3] = new buzz.sound("snd/pop", { formats: ["mp3", "wav"] });
     sndfx[4] = new buzz.sound("snd/coupoing", { formats: ["mp3", "wav"] });
-    
-    /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
-     sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
-     sndfx[2] = new buzz.sound( "snd/snd3", { formats: [ "mp3", "wav" ] } );
-     sndfx[3] = new buzz.sound( "snd/snd4", { formats: [ "mp3", "wav" ] } );
-     sndfx[4] = new buzz.sound( "snd/snd5", { formats: [ "mp3", "wav" ] } );
-     sndfx[5] = new buzz.sound( "snd/snd6", { formats: [ "mp3", "wav" ] } );
-     sndfx[6] = new buzz.sound( "snd/snd7", { formats: [ "mp3", "wav" ] } );*/
 }
 
-/*{
-	new Audio( "snd/snd1.wav" ),
-	new Audio( "snd/snd2.wav" ),
-	new Audio( "snd/snd3.wav" ),
-	new Audio( "snd/snd4.wav" ),
-	new Audio( "snd/snd5.wav" ),
-	new Audio( "snd/snd6.wav" ),
-	new Audio( "snd/snd7.wav" )
- };*/
+
 
 
 /*
@@ -346,9 +368,16 @@ function update_mouse_position() {
     user.ly = user.y;
     user.x = mouse_x;
     user.y = mouse_y;
+    
+    /* Keep the user in bounds */
+    if( user.x < 0 ) user.x = 0;
+    if( user.x > area_width ) user.x = area_width;
+    if( user.y < 0 ) user.y = 0;
+    if( user.y > area_height ) user.y = area_height;
 }
 
 function snd_play(id) {
+    sndfx[id].stop();
     sndfx[id].currentTime = 0;
     sndfx[id].play();
 }
@@ -408,7 +437,7 @@ function on_mouse_over() {
 
 function on_mouse_click() {
     /* Save mouse click */
-    //mouse_click = true;
+    mouse_click = true;
 }
 
 function on_mouse_up() {
@@ -435,12 +464,18 @@ function draw_overlay() {
 function reset_game() {
     /* Reset all lists */
     spheres = [];
+    mushroom = [];
+    
+    mushroom.push( new mushroom_t( Math.floor(Math.random() * area_width),
+                                  Math.floor(Math.random() * area_height),
+                                  Math.floor(Math.random() * 3) ) );
     
     /* Reset the user stats */
     score = 0;
     
     /* Reset other stuff */
     sphere_speed_max = 5;
+    spheres_until_next_max_spawn = 10;
     
     game_over = false;
 }
@@ -461,35 +496,68 @@ function draw_user() {
     context.drawImage(smiley, user.x - (smiley.width / 4), user.y - (smiley.height / 4),smiley.width / 2, smiley.height / 2);
 }
 
+
+var max_mushrooms = 1;
+var spheres_until_next_max_spawn = 10;
+var spawn_speed = 3*60; // Frame based spawning
+var spawn_timer = 0;
+
+mushroom.push(new mushroom_t(area_width / 2, area_height / 2, 0));
+
 function handle_mushroom() {
-    var img = mushrooms[mushroom.type];
-    var x = mushroom.x;
-    var y = mushroom.y;
-    var size = mushrooms[mushroom.type].width;
-    
-    /* Draw the mushroom in it's current place */
-    context.drawImage(img, x - (size / 2), y - (size / 2), size, size);
-    
-    /* Did we get the mushroom? */
-    var d = distance(user.x, user.y, x, y);
-    if (d < 16) {
-        score++;
-        mushroom.x = Math.floor(Math.random() * area_width);
-        mushroom.y = Math.floor(Math.random() * area_height);
-        mushroom.type = Math.floor(Math.random() * 3);
+    for( var i = mushroom.length; i--; )
+    {
+        var type = mushroom[i].type;
+        var img = mushrooms[mushroom[i].type];
+        var x = mushroom[i].x;
+        var y = mushroom[i].y;
+        var size = 32; //mushrooms[mushroom[i].type].width;
         
-        if (mushroom.x > area_width - 50)
-            mushroom.x = area_width - 50;
-        if (mushroom.y > area_height - 50)
-            mushroom.y = area_height - 50;
-        if (mushroom.x < 50)
-            mushroom.x = 50;
-        if (mushroom.y < 50)
-            mushroom.y = 50;
+        /* Draw the mushroom in it's current place */
+        context.drawImage(img, x - (size / 2), y - (size / 2), size, size);
         
-        snd_play(3);
-        add_sphere();
+        /* Did we get the mushroom? */
+        var d = distance(user.x, user.y, x, y);
+        if (d < 16) {
+            score++;
+            mushroom[i].x = Math.floor(Math.random() * area_width);
+            mushroom[i].y = Math.floor(Math.random() * area_height);
+            mushroom[i].type = Math.floor(Math.random() * 3);
+            
+            if (mushroom[i].x > area_width - 50)
+                mushroom[i].x = area_width - 50;
+            if (mushroom[i].y > area_height - 50)
+                mushroom[i].y = area_height - 50;
+            if (mushroom[i].x < 50)
+                mushroom[i].x = 50;
+            if (mushroom[i].y < 50)
+                mushroom[i].y = 50;
+            
+            snd_play(3);
+            add_sphere();
+            
+            spheres_until_next_max_spawn--;
+            
+            if( spheres_until_next_max_spawn < 1 )
+            {
+                var m = new mushroom_t( Math.floor(Math.random() * area_width),
+                                       Math.floor(Math.random() * area_height),
+                                       Math.floor(Math.random() * 3) );
+                mushroom.push(m);
+                
+                spheres_until_next_max_spawn = 10;
+            }
+        }
     }
+    
+    
+    /*spawn_timer++;
+     
+     if( spawn_timer >= spawn_speed )
+     {
+     spawn_timer = 0;
+     
+     }*/
 }
 
 function handle_game_over() {
@@ -652,32 +720,22 @@ function draw_border() {
 }
 
 function draw_title_screen() {
+    
+    /* Draw some mushrooms on the sides */
+    //context.drawImage( mushrooms2, (area_width/2)-(mushrooms2.width)-40, (area_height/2)-(mushrooms2.height/2) );
+    //context.drawImage( mushrooms2, (area_width/2)+40, (area_height/2)-(mushrooms2.height/2) );
+    context.drawImage( mushrooms2, (area_width/2)-(mushrooms2.width/2), (area_height/2)-(mushrooms2.height/2) );
+    
     /* Title text */
-    draw_font('Looptil', (area_width / 16), area_height / 4, '40pt Helvetica', 'black');
-    
-    /* Start button */
-    /*context.beginPath();
-     context.rect( 100, (area_height/2)-32, 128, 64 );
-     context.fillStyle = 'white';
-     context.fill();*/
-    
-    /* Simulate a thick border */
-    /*context.lineWidth = 2;
-     context.strokeStyle = 'black';
-     context.stroke();*/
-    
-    /* Font margins */
-    var mx = (/*area_width-*/(area_width / 16)) + 10;
-    var my = (area_height / 3) + 20;
-    
-    draw_font('Shroomin', mx, my, 'Bold 10pt Helvetica', 'black');
+    draw_outlined_font( "Shroomin", area_width/2, area_height/2, '48pt Helvetica', 'black', 'white', 10, 'center' );
 }
 
 function start_game() {
     game_mode = 2;
     game_over = false;
+    //alertEx( "Okay, we started" );
     
-    stage_timer_id = setTimeout(stage_timer_func, 15000);
+    //stage_timer_id = setTimeout(stage_timer_func, 15000);
 }
 
 function stop_game() {
@@ -690,10 +748,10 @@ function stop_game() {
 function update_title_screen() {
     /* Was the start button clicked? */
     if (mouse_click) {
-        if (user.x > (area_width / 16) && user.x < (area_width / 16) + (((area_width / 3) - 50) / 2) &&
-            user.y > (area_height / 3) + 220 && user.y < (area_height / 3) + 260) {
-            start_game();
-        }
+        //if (user.x > (area_width / 16) && user.x < (area_width / 16) + (((area_width / 3) - 50) / 2) &&
+        //    user.y > (area_height / 3) + 220 && user.y < (area_height / 3) + 260) {
+        start_game();
+        //}
     }
 }
 
@@ -747,14 +805,19 @@ function main_loop() {
     draw_grass_tile();
     draw_border();
     
-    if( !dialog_box.active )
+    /* Game started */
+    if( game_mode == 2 )
     {
-        movement_gamepad();
-        
-        handle_mushroom();
-        draw_spheres();
-        update_spheres();
-        draw_user();
+        if( !dialog_box.active )
+        {
+            movement_gamepad();
+            
+            handle_mushroom();
+            draw_spheres();
+            update_spheres();
+            draw_user();
+            draw_hud();
+        }
     }
     
     draw_dialog_box();
@@ -763,20 +826,26 @@ function main_loop() {
     else
         dialog_box_on_click( finger_x, finger_y );
     
-    if( dialog_box.active )
+    /* Title screen */
+    if( game_mode == 0 )
+    {
+        draw_title_screen();
+        update_title_screen();
+    }
+    
+    if( dialog_box.active || game_mode == 0 )
     {
         /* Draw the cursor while the dialog box is active, only for non-mobile/embedded */
         if( !is_mobile.any() )
             draw_cursor();
     }
     
-    draw_hud();
     calculate_fps();
     
     if (game_over)
     {
         delay(500);
-        invoke_dialog_box( "Your Score: " + score + "\nTry Again?", 0, 0, true, 1 );
+        invoke_dialog_box( "Your Score: " + score + "\nTry Again?", 0, 0, true, 0 );
         reset_game();
     }
     
@@ -982,6 +1051,8 @@ function on_load() {
     //go_fullscreen();
     //block_until_document_loaded();
     setup_event_handlers();
+    
+    //invoke_dialog_box( " ", 0, 0, true, 2 );
     
     if (window.mozRequestAnimationFrame) {
         anim_frame = window.mozRequestAnimationFrame;

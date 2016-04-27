@@ -111,19 +111,24 @@ function draw_dialog_box()
     if( dialog_box.active )
     {
         /* Calculate the dimensions of this dialog box */
-        var width = 512, height = 256;
+        var width = 512, height = dialog_box.type == 2 ? 330 : 256;
         var dx = dialog_box.centered ? (area_width/2) - (width/2) : dialog_box.x;
         var dy = dialog_box.centered ? (area_height/2) - (height/2) : dialog_box.y;
         var sx = 0;
         var sy = dialog_box.type == 0 ? 0 : height;
         
-        context.drawImage( dialog, sx, sy, width, height, dx, dy, width, height );
+        if( dialog_box.type != 2 )
+            context.drawImage( dialog, sx, sy, width, height, dx, dy, width, height );
+        else
+            context.drawImage( dialog3, dx, dy );
         
         /* TODO: Multiple lines */
         var tx = dx + (width/2);
         var ty = dy + (height/2);
         
-        draw_outlined_font( dialog_box.text, tx, ty, '24pt Helvetica', 'black', 'white', 6, 'center' );
+        if( dialog_box.type != 2 )
+            draw_outlined_font( dialog_box.text, tx, ty, '24pt Helvetica', 'black', 'white', 6, 'center' );
+        
         //('Score: ' + score, 30, 30, '14pt Helvetica', 'black', 'white', 6, 'left' );//
     }
 }
@@ -211,6 +216,11 @@ function dialog_box_on_click( x, y )
             //alertEx( "You clicked OK" );
         }
     }
+    /* Main menu */
+    if( dialog_box.type === 2 )
+    {
+        
+    }
 }
 
 /* Sound effects */
@@ -222,25 +232,9 @@ function init_soundfx() {
     sndfx[2] = new buzz.sound("snd/Emberiza.pusilla", { formats: ["mp3", "wav"] });
     sndfx[3] = new buzz.sound("snd/pop", { formats: ["mp3", "wav"] });
     sndfx[4] = new buzz.sound("snd/coupoing", { formats: ["mp3", "wav"] });
-    
-    /*sndfx[0] = new buzz.sound( "snd/snd1", { formats: [ "mp3", "wav" ] } );
-     sndfx[1] = new buzz.sound( "snd/snd2", { formats: [ "mp3", "wav" ] } );
-     sndfx[2] = new buzz.sound( "snd/snd3", { formats: [ "mp3", "wav" ] } );
-     sndfx[3] = new buzz.sound( "snd/snd4", { formats: [ "mp3", "wav" ] } );
-     sndfx[4] = new buzz.sound( "snd/snd5", { formats: [ "mp3", "wav" ] } );
-     sndfx[5] = new buzz.sound( "snd/snd6", { formats: [ "mp3", "wav" ] } );
-     sndfx[6] = new buzz.sound( "snd/snd7", { formats: [ "mp3", "wav" ] } );*/
 }
 
-/*{
-	new Audio( "snd/snd1.wav" ),
-	new Audio( "snd/snd2.wav" ),
-	new Audio( "snd/snd3.wav" ),
-	new Audio( "snd/snd4.wav" ),
-	new Audio( "snd/snd5.wav" ),
-	new Audio( "snd/snd6.wav" ),
-	new Audio( "snd/snd7.wav" )
- };*/
+
 
 
 /*
@@ -383,6 +377,7 @@ function update_mouse_position() {
 }
 
 function snd_play(id) {
+    sndfx[id].stop();
     sndfx[id].currentTime = 0;
     sndfx[id].play();
 }
@@ -738,7 +733,7 @@ function draw_title_screen() {
 function start_game() {
     game_mode = 2;
     game_over = false;
-    alertEx( "Okay, we started" );
+    //alertEx( "Okay, we started" );
     
     //stage_timer_id = setTimeout(stage_timer_func, 15000);
 }
@@ -810,13 +805,6 @@ function main_loop() {
     draw_grass_tile();
     draw_border();
     
-    /* Title screen */
-    if( game_mode == 0 )
-    {
-        draw_title_screen();
-        update_title_screen();
-    }
-    
     /* Game started */
     if( game_mode == 2 )
     {
@@ -837,6 +825,13 @@ function main_loop() {
         dialog_box_on_click( mouse_x, mouse_y );
     else
         dialog_box_on_click( finger_x, finger_y );
+    
+    /* Title screen */
+    if( game_mode == 0 )
+    {
+        draw_title_screen();
+        update_title_screen();
+    }
     
     if( dialog_box.active || game_mode == 0 )
     {
@@ -1056,6 +1051,8 @@ function on_load() {
     //go_fullscreen();
     //block_until_document_loaded();
     setup_event_handlers();
+    
+    //invoke_dialog_box( " ", 0, 0, true, 2 );
     
     if (window.mozRequestAnimationFrame) {
         anim_frame = window.mozRequestAnimationFrame;
