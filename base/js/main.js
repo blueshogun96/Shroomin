@@ -392,6 +392,10 @@ function snd_stop(id) {
     sndfx[id].stop();
 }
 
+function snd_volume(id, volume) {
+    sndfx[id].setVolume(volume);
+}
+
 
 /*
  * Game functions
@@ -1033,6 +1037,9 @@ function on_load() {
     snd_loop(0);
     snd_loop(1);
     snd_loop(2);
+    snd_volume(0, 30);
+    snd_volume(1, 30);
+    snd_volume(2, 30);
     
     /* Animate main loop */
     var main = function () {
