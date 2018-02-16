@@ -25,6 +25,7 @@ var game_canvas;
 var context;
 var game_speed = 1.0;
 var gamepad;
+var is_uwp = false;
 
 
 /* User */
@@ -91,6 +92,10 @@ mushrooms2.src = "img/mushrooms.png";
  context.fillRect( 0, 0, game_canvas.width, game_canvas.height );
  }*/
 
+
+function set_uwp_mode(uwp) {
+    is_uwp = uwp;
+}
 
 /* Dialog UI */
 function dialog_box_t()
@@ -874,7 +879,7 @@ var offset_x = 0, offset_y = 0;
 function setup_event_handlers() {
     var canvas = document.getElementById("game_canvas");
     
-    if (!is_mobile.any()) {
+    if (!is_mobile.any() && !is_uwp ) {
         canvas.addEventListener("mousemove", on_mouse_move);
         canvas.addEventListener("mouseout", on_mouse_out);
         canvas.addEventListener("mouseover", on_mouse_over);
@@ -884,10 +889,10 @@ function setup_event_handlers() {
                                 });
     }
     else {
-        if (is_mobile.windows()) {
-            canvas.addEventListener('pointerdown', on_mouse_move);
+        if (is_mobile.windows() || is_uwp ) {
+            canvas.addEventListener('pointerdown', function (e) { mouse_click = true; } );
             canvas.addEventListener('pointermove', on_mouse_move);
-            canvas.addEventListener('pointerup', on_mouse_move); // TODO: dialog_box
+            canvas.addEventListener('pointerup', function (e) { mouse_up = true } ); // TODO: dialog_box
         }
         
         canvas.addEventListener('touchstart', function (e) {

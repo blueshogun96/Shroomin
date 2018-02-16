@@ -1,0 +1,35 @@
+body {
+    background: #3f3f3f;
+    text-align: center; 
+    padding: 20px; 
+    color: #ffffff; 
+    font: 14px/21px Arial,Helvetica,sans-serif;
+}
+ 
+a {
+    color: #B93F14;
+}
+ 
+a:hover {
+    text-decoration: none;
+}
+ 
+ol {
+    width: 600px; 
+    text-align: left; 
+    margin: 15px auto
+}
+
+canvas {
+    border: 1px solid black;
+    cursor: none;
+    -webkit-border-radius:10px;
+    -moz-border-radius:10px;
+    -border-radius:10px;
+}
+
+.border {
+    -webkit-border-radius:20px;
+    -moz-border-radius:20px;
+    -border-radius:20px;
+}
