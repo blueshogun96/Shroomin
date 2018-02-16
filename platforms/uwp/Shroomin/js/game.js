@@ -95,6 +95,7 @@ mushrooms2.src = "img/mushrooms.png";
 
 function set_uwp_mode(uwp) {
     is_uwp = uwp;
+    if (uwp) navigator.gamepadInputEmulation = "gamepad";
 }
 
 /* Dialog UI */
